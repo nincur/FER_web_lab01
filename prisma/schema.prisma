@@ -1,0 +1,36 @@
+// Prisma schema for PostgreSQL (Supabase)
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// Rounds represent lottery drawing periods
+model Round {
+  id            String    @id @default(uuid()) @db.Uuid
+  isActive      Boolean   @default(false)
+  createdAt     DateTime  @default(now())
+  closedAt      DateTime?
+  drawnNumbers  Int[]     // Array of drawn numbers (empty until stored)
+
+  tickets       Ticket[]
+
+  @@map("rounds")
+}
+
+// Tickets are lottery entries submitted by users
+model Ticket {
+  id              String   @id @default(uuid()) @db.Uuid
+  roundId         String   @db.Uuid
+  idNumber        String   // ID card or passport number (up to 20 chars)
+  selectedNumbers Int[]    // 6-10 numbers between 1-45
+  createdAt       DateTime @default(now())
+
+  round           Round    @relation(fields: [roundId], references: [id])
+
+  @@map("tickets")
+}
